@@ -1,12 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>David Lo Paper Monitor</title>
+  <meta charset="utf-8" />
+  <title>Has David Lo published today?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    }
+
+    #answer {
+      font-size: clamp(5rem, 20vw, 18rem);
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-align: center;
+      user-select: none;
+    }
+
+    .yes {
+      color: #00ff9c;
+      text-shadow: 0 0 40px rgba(0, 255, 156, 0.6);
+    }
+
+    .no {
+      color: #ff4d4d;
+      text-shadow: 0 0 40px rgba(255, 77, 77, 0.6);
+    }
+  </style>
 </head>
+
 <body>
-  <h1>David Lo - Paper Monitor</h1>
-  <div id="status">Caricamento...</div>
+  <div id="answer"></div>
   <script src="app.js"></script>
 </body>
 </html>

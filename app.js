@@ -2,15 +2,18 @@ fetch("data/last_paper.json")
   .then(r => r.json())
   .then(paper => {
     const today = new Date().toISOString().slice(0, 10);
-
-    let msg = `
-      <p><strong>Titolo:</strong> ${paper.title}</p>
-      <p><strong>Data:</strong> ${paper.publicationDate}</p>
-    `;
+    const answer = document.getElementById("answer");
 
     if (paper.publicationDate === today) {
-      msg += "<p><strong>Nuovo paper pubblicato oggi!</strong></p>";
+      answer.textContent = "YES";
+      answer.className = "yes";
+    } else {
+      answer.textContent = "NOT YET";
+      answer.className = "no";
     }
-
-    document.getElementById("status").innerHTML = msg;
+  })
+  .catch(() => {
+    const answer = document.getElementById("answer");
+    answer.textContent = "NOT YET";
+    answer.className = "no";
   });
