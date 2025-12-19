@@ -1,69 +1,70 @@
 import json
 import requests
-import feesdparser
+import feedparser
 from datetime import datetime
 from pathlib import Path
 
-AUTHOR_ID = "1741107"  # David Lo (SMU)
+AUTHOR_ID = "1741107"
 
-# ---------- Semantic Scholar ----------
-ss_url = f"https://api.semanticscholar.org/graph/v1/author/{AUTHOR_ID}/papers"
-ss_params = {
-    "limit": 5,
-    "sort": "publicationDate",
-    "fields": "paperId,title,publicationDate"
-}
+def get_semantic_scholar_papers():
+    url = f"https://api.semanticscholar.org/graph/v1/author/{AUTHOR_ID}/papers"
+    params = {
+        "limit": 5,
+        "sort": "publicationDate",
+        "fields": "paperId,title,publicationDate"
+    }
+    r = requests.get(url, params=params)
+    r.raise_for_status()
 
-ss_resp = requests.get(ss_url, params=ss_params)
-ss_resp.raise_for_status()
+    papers = []
+    for p in r.json()["data"]:
+        if p.get("publicationDate"):
+            papers.append({
+                "source": "semantic_scholar",
+                "id": p["paperId"],
+                "title": p["title"],
+                "date": p["publicationDate"]
+            })
+    return papers
 
-ss_papers = []
-for p in ss_resp.json()["data"]:
-    if p.get("publicationDate"):
-        ss_papers.append({
-            "source": "semantic_scholar",
-            "id": p["paperId"],
-            "title": p["title"],
-            "date": p["publicationDate"]
-        })
 
-# ---------- arXiv ----------
-arxiv_url = (
-    "http://export.arxiv.org/api/query?"
-    "search_query=au:\"David Lo\"&"
-    "sortBy=submittedDate&"
-    "sortOrder=descending&"
-    "max_results=5"
-)
+def get_arxiv_papers():
+    url = (
+        "http://export.arxiv.org/api/query?"
+        "search_query=au:\"David Lo\"&"
+        "sortBy=submittedDate&"
+        "sortOrder=descending&"
+        "max_results=5"
+    )
+    feed = feedparser.parse(url)
 
-feed = feedparser.parse(arxiv_url)
+    papers = []
+    for e in feed.entries:
+        authors = [a.name for a in e.authors]
+        if "David Lo" in authors:
+            papers.append({
+                "source": "arxiv",
+                "id": e.id.split("/")[-1],
+                "title": e.title.strip(),
+                "date": e.published[:10]
+            })
+    return papers
 
-arxiv_papers = []
-for e in feed.entries:
-    authors = [a.name for a in e.authors]
-    if "David Lo" in authors:
-        arxiv_papers.append({
-            "source": "arxiv",
-            "id": e.id.split("/")[-1],
-            "title": e.title.strip(),
-            "date": e.published[:10]
-        })
 
-# ---------- Merge & select latest ----------
-all_papers = ss_papers + arxiv_papers
+def select_latest(papers):
+    return max(papers, key=lambda p: datetime.fromisoformat(p["date"]))
 
-def parse_date(p):
-    return datetime.fromisoformat(p["date"])
 
-latest = max(all_papers, key=parse_date)
+def write_last_paper(paper, path="data/last_paper.json"):
+    Path(path).write_text(json.dumps({
+        "source": paper["source"],
+        "paperId": paper["id"],
+        "title": paper["title"],
+        "publicationDate": paper["date"]
+    }, indent=2))
 
-out = {
-    "source": latest["source"],
-    "paperId": latest["id"],
-    "title": latest["title"],
-    "publicationDate": latest["date"]
-}
 
-Path("data/last_paper.json").write_text(
-    json.dumps(out, indent=2)
-)
+if __name__ == "__main__":
+    papers = get_semantic_scholar_papers() + get_arxiv_papers()
+    latest = select_latest(papers)
+    write_last_paper(latest)
