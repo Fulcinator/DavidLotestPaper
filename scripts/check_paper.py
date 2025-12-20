@@ -31,11 +31,12 @@ def get_semantic_scholar_papers():
 def get_arxiv_papers():
     url = (
         "http://export.arxiv.org/api/query?"
-        "search_query=au:\"David Lo\"&"
+        "search_query=au:%22David%20Lo%22&"
         "sortBy=submittedDate&"
         "sortOrder=descending&"
         "max_results=5"
     )
+
     feed = feedparser.parse(url)
 
     papers = []
