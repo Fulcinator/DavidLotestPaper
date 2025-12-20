@@ -20,3 +20,5 @@ fetch("data/last_paper.json")
     answer.textContent = "NOT YET";
     answer.className = "no";
   });
+
+  latest.textContent = `the latest paper is: ${paper.title}`;
