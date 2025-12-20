@@ -29,15 +29,24 @@ def get_semantic_scholar_papers():
 
 
 def get_arxiv_papers():
-    url = (
-        "http://export.arxiv.org/api/query?"
-        "search_query=au:%22David%20Lo%22&"
-        "sortBy=submittedDate&"
-        "sortOrder=descending&"
-        "max_results=5"
-    )
+    base_url = "http://export.arxiv.org/api/query"
 
-    feed = feedparser.parse(url)
+    params = {
+        "search_query": 'au:"David Lo"',
+        "sortBy": "submittedDate",
+        "sortOrder": "descending",
+        "max_results": 5
+    }
+
+    # arXiv richiede User-Agent valido
+    headers = {
+        "User-Agent": "DavidLoPaperMonitor/1.0 (contact: you@example.com)"
+    }
+
+    response = requests.get(base_url, params=params, headers=headers)
+    response.raise_for_status()
+
+    feed = feedparser.parse(response.text)
 
     papers = []
     for e in feed.entries:
@@ -49,6 +58,7 @@ def get_arxiv_papers():
                 "title": e.title.strip(),
                 "date": e.published[:10]
             })
+
     return papers
 
 
