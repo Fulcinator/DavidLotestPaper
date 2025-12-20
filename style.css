@@ -1,0 +1,33 @@
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  color: white;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#answer {
+  font-size: 10rem;
+  font-weight: 900;
+}
+
+.yes {
+  color: #22c55e;
+  text-shadow: 0 0 40px #22c55e;
+}
+
+.no {
+  color: #ef4444;
+  text-shadow: 0 0 40px #ef4444;
+}
+
+#latest {
+  position: absolute;
+  bottom: 2rem;
+  font-size: 1rem;
+  opacity: 0.75;
+}
