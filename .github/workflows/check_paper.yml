@@ -2,7 +2,7 @@ name: Check new paper
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+  - cron: "0 */4 * * *"
   workflow_dispatch:
 
 permissions:

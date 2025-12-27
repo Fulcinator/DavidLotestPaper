@@ -29,7 +29,7 @@ def get_semantic_scholar_papers():
 
 
 def get_arxiv_papers():
-    base_url = "http://export.arxiv.org/api/query"
+    base_url = "https://export.arxiv.org/api/query"
 
     params = {
         "search_query": 'au:"David Lo"',
@@ -38,13 +38,23 @@ def get_arxiv_papers():
         "max_results": 5
     }
 
-    # arXiv richiede User-Agent valido
     headers = {
         "User-Agent": "DavidLoPaperMonitor/1.0 (contact: you@example.com)"
     }
 
-    response = requests.get(base_url, params=params, headers=headers)
-    response.raise_for_status()
+    try:
+        response = requests.get(base_url, params=params, headers=headers, timeout=10)
+
+        # arXiv rate limit
+        if response.status_code == 429:
+            print("arXiv rate limited (429). Skipping arXiv.")
+            return []
+
+        response.raise_for_status()
+
+    except requests.RequestException as e:
+        print(f"arXiv request failed: {e}")
+        return []
 
     feed = feedparser.parse(response.text)
 
