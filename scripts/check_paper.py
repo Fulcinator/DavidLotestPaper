@@ -64,6 +64,8 @@ def get_crossref_papers():
         #discard papers if the date is > 
         if datetime.fromisoformat(paper["date"]) > datetime.now():
             p.remove(paper)
+        else:
+            print(f'Considering paper {paper["title"]} published on {paper["date"]}')
     return p
 
 
