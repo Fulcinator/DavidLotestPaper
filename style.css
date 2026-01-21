@@ -1,35 +1,95 @@
-body {
+:root {
+  --bg-start: #020617;
+  --bg-end: #1e293b;
+  --yes-color: #22c55e;
+  --no-color: #ef4444;
+  --text-color: #ffffff;
+}
+
+/* Reset minimo */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at top, #1e293b, #020617);
-  color: white;
-  font-family: system-ui, sans-serif;
+  padding: 0;
+  height: 100%;
+}
+
+/* Layout principale */
+body {
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, var(--bg-end), var(--bg-start));
+  color: var(--text-color);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
+
+  text-align: center;
+  padding: 1rem;
 }
 
+/* YES / NOT YET */
 #answer {
-  font-size: min(18rem, 35vw);
   font-weight: 900;
-  letter-spacing: 0.25rem;
+  letter-spacing: 0.15em;
+
+  /* Responsive font size */
+  font-size: clamp(4rem, 18vw, 16rem);
+  line-height: 1;
 }
 
+/* Stati */
 .yes {
-  color: #22c55e;
-  text-shadow: 0 0 40px #22c55e;
+  color: var(--yes-color);
+  text-shadow: 0 0 32px rgba(34, 197, 94, 0.7);
 }
 
 .no {
-  color: #ef4444;
-  text-shadow: 0 0 40px #ef4444;
+  color: var(--no-color);
+  text-shadow: 0 0 32px rgba(239, 68, 68, 0.7);
 }
 
+/* Titolo paper */
 #latest {
-  position: absolute;
-  bottom: 2rem;
-  font-size: 1rem;
-  opacity: 0.75;
+  margin-top: 1.5rem;
+  max-width: 60rem;
+
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  line-height: 1.4;
+  opacity: 0.85;
+
+  word-wrap: break-word;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  #latest {
+    max-width: 90%;
+  }
+}
+
+/* Smartphone */
+@media (max-width: 480px) {
+  #answer {
+    letter-spacing: 0.1em;
+  }
+
+  #latest {
+    margin-top: 1rem;
+  }
+}
+
+/* Accessibilità: riduci animazioni */
+@media (prefers-reduced-motion: reduce) {
+  .yes,
+  .no {
+    text-shadow: none;
+  }
 }
