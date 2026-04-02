@@ -1,6 +1,6 @@
 {
   "source": "arxiv",
-  "paperId": "2603.29813v1",
-  "title": "Compiling Code LLMs into Lightweight Executables",
-  "publicationDate": "2026-03-31"
+  "paperId": "2604.00491v1",
+  "title": "Executing as You Generate: Hiding Execution Latency in LLM Code Generation",
+  "publicationDate": "2026-04-01"
 }
