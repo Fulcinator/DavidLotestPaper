@@ -1,6 +1,6 @@
 {
   "source": "arxiv",
-  "paperId": "2604.01799v1",
-  "title": "TestDecision: Sequential Test Suite Generation via Greedy Optimization and Reinforcement Learning",
-  "publicationDate": "2026-04-02"
+  "paperId": "2604.02665v1",
+  "title": "AgentSZZ: Teaching the LLM Agent to Play Detective with Bug-Inducing Commits",
+  "publicationDate": "2026-04-03"
 }
