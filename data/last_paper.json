@@ -1,6 +1,6 @@
 {
   "source": "arxiv",
-  "paperId": "2604.06742v1",
-  "title": "Evaluating LLM-Based 0-to-1 Software Generation in End-to-End CLI Tool Scenarios",
-  "publicationDate": "2026-04-08"
+  "paperId": "2604.08083v1",
+  "title": "Can LLMs Deobfuscate Binary Code? A Systematic Analysis of Large Language Models into Pseudocode Deobfuscation",
+  "publicationDate": "2026-04-09"
 }
