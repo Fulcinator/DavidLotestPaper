@@ -1,6 +1,6 @@
 {
   "source": "arxiv",
-  "paperId": "2604.08083v1",
-  "title": "Can LLMs Deobfuscate Binary Code? A Systematic Analysis of Large Language Models into Pseudocode Deobfuscation",
-  "publicationDate": "2026-04-09"
+  "paperId": "2604.17860v1",
+  "title": "TitanCA: Lessons from Orchestrating LLM Agents to Discover 100+ CVEs",
+  "publicationDate": "2026-04-20"
 }
