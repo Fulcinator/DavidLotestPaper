@@ -1,6 +1,6 @@
 {
   "source": "arxiv",
-  "paperId": "2606.28229v1",
-  "title": "Humanizing Automatically Generated Unit Test Suites with LLM-Based Refactoring",
-  "publicationDate": "2026-06-26"
+  "paperId": "2607.01213v1",
+  "title": "RepoRescue: An Empirical Study of LLM Agents on Whole-Repository Compatibility Rescue",
+  "publicationDate": "2026-07-01"
 }
