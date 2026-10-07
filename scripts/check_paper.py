@@ -1,138 +1,131 @@
 import json
-import requests
-import feedparser
-from datetime import datetime
+import sys
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
-AUTHOR_ID = "143960553"  # David Lo's Semantic Scholar Author ID
+import feedparser
+import requests
 
-def get_semantic_scholar_papers():
-    url = f"https://api.semanticscholar.org/graph/v1/author/{AUTHOR_ID}/papers"
+AUTHOR_NAME = "David Lo"
+DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "last_paper.json"
+
+ARXIV_URL = "https://export.arxiv.org/api/query"
+HEADERS = {
+    "User-Agent": "DavidLoPaperMonitor/1.0 (+https://github.com/Fulcinator/DavidLotestPaper)"
+}
+
+
+class SourceError(Exception):
+    pass
+
+
+def get_arxiv_papers(max_results=25, retries=3, timeout=30):
     params = {
-        "limit": 5,
-        "sort": "-publicationDate",
-        "fields": "paperId,title,publicationDate"
-    }
-    r = requests.get(url, params=params)
-    r.raise_for_status()
-
-    papers = []
-    for p in r.json()["data"]:
-        if p.get("publicationDate"):
-            papers.append({
-                "source": "semantic_scholar",
-                "id": p["paperId"],
-                "title": p["title"],
-                "date": p["publicationDate"]
-            })
-    return papers
-
-def get_crossref_papers():
-    url = "https://api.crossref.org/works"
-    params = {
-        "query.author": "David Lo",
-        "rows": 5,
-        "sort": "published",
-        "order": "desc"
-    }
-
-    headers = {
-        "User-Agent": "DavidLoPaperMonitor/1.0 (mailto:you@example.com)"
-    }
-
-    r = requests.get(url, params=params, headers=headers, timeout=10)
-    r.raise_for_status()
-
-    papers = []
-    for item in r.json()["message"]["items"]:
-        date_parts = item.get("published", {}).get("date-parts")
-        if not date_parts:
-            continue
-
-        year, month, day = (date_parts[0] + [1, 1, 1])[:3]
-        date = f"{year:04d}-{month:02d}-{day:02d}"
-
-        papers.append({
-            "source": "crossref",
-            "id": item.get("DOI"),
-            "title": item["title"][0],
-            "date": date
-        })
-
-    p = papers.copy()
-    for paper in papers:
-        #discard papers if the date is > 
-        if datetime.fromisoformat(paper["date"]) > datetime.now():
-            p.remove(paper)
-        else:
-            print(f'Considering paper {paper["title"]} published on {paper["date"]}')
-    return p
-
-
-
-def get_arxiv_papers():
-    base_url = "https://export.arxiv.org/api/query"
-
-    params = {
-        "search_query": 'au:"David Lo"',
+        "search_query": f'au:"{AUTHOR_NAME}"',
         "sortBy": "submittedDate",
         "sortOrder": "descending",
-        "max_results": 5
+        "max_results": max_results,
     }
 
-    headers = {
-        "User-Agent": "DavidLoPaperMonitor/1.0 (contact: you@example.com)"
-    }
+    last_error = None
+    for attempt in range(retries):
+        if attempt:
+            time.sleep(5 * 2 ** attempt)  # 10s, 20s - arXiv asks for >= 3s between calls
+        try:
+            response = requests.get(ARXIV_URL, params=params, headers=HEADERS, timeout=timeout)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            last_error = e
+            print(f"arXiv attempt {attempt + 1}/{retries} failed: {e}")
+            continue
 
-    try:
-        response = requests.get(base_url, params=params, headers=headers, timeout=10)
+        feed = feedparser.parse(response.text)
+        # arXiv sometimes answers 200 with an empty feed: treat it as a transient failure
+        if not feed.entries:
+            last_error = "empty feed"
+            print(f"arXiv attempt {attempt + 1}/{retries} returned no entries")
+            continue
 
-        # arXiv rate limit
-        if response.status_code == 429:
-            print("arXiv rate limited (429). Skipping arXiv.")
-            return []
+        papers = []
+        for e in feed.entries:
+            authors = [a.name.strip() for a in e.get("authors", [])]
+            if AUTHOR_NAME in authors:
+                papers.append({
+                    "source": "arxiv",
+                    "id": e.id.split("/")[-1],
+                    "title": " ".join(e.title.split()),
+                    "published": e.published,  # full ISO timestamp, e.g. 2026-09-30T13:09:24Z
+                })
+        return papers
 
-        response.raise_for_status()
+    raise SourceError(f"arXiv unavailable after {retries} attempts: {last_error}")
 
-    except requests.RequestException as e:
-        print(f"arXiv request failed: {e}")
-        return []
 
-    feed = feedparser.parse(response.text)
-
-    papers = []
-    for e in feed.entries:
-        authors = [a.name for a in e.authors]
-        if "David Lo" in authors:
-            papers.append({
-                "source": "arxiv",
-                "id": e.id.split("/")[-1],
-                "title": e.title.strip(),
-                "date": e.published[:10]
-            })
-
-    return papers
+def parse_ts(value):
+    """Parse 'YYYY-MM-DD' or a full ISO timestamp into an aware UTC datetime."""
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
 
 
 def select_latest(papers):
     if not papers:
         return None
-    return max(papers, key=lambda p: datetime.fromisoformat(p["date"]))
+    return max(papers, key=lambda p: parse_ts(p["published"]))
 
 
-def write_last_paper(paper, path="data/last_paper.json"):
+def read_last_paper(path=DATA_PATH):
+    try:
+        return json.loads(Path(path).read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
+def is_newer(candidate, stored):
+    if stored is None:
+        return True
+    if candidate["id"] == stored.get("paperId"):
+        return False
+    # Older files only have "publicationDate"; never move backwards in time
+    stored_ts = parse_ts(stored.get("publishedAt") or stored["publicationDate"])
+    return parse_ts(candidate["published"]) >= stored_ts
+
+
+def write_last_paper(paper, path=DATA_PATH, now=None):
+    now = now or datetime.now(timezone.utc)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text(json.dumps({
         "source": paper["source"],
         "paperId": paper["id"],
         "title": paper["title"],
-        "publicationDate": paper["date"]
-    }, indent=2))
+        "publicationDate": paper["published"][:10],
+        "publishedAt": paper["published"],
+        "detectedAt": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }, indent=2) + "\n", encoding="utf-8")
+
+
+def main(path=DATA_PATH):
+    try:
+        papers = get_arxiv_papers()
+    except SourceError as e:
+        # Fail the job so GitHub notifies us instead of silently keeping stale data
+        print(e)
+        return 1
+
+    for p in papers:
+        print(f'Considering {p["id"]} ({p["published"]}): {p["title"]}')
+
+    latest = select_latest(papers)
+    stored = read_last_paper(path)
+    if latest and is_newer(latest, stored):
+        print(f'New latest paper: {latest["title"]}')
+        write_last_paper(latest, path)
+    else:
+        print("No new paper")
+    return 0
 
 
 if __name__ == "__main__":
-    papers = get_crossref_papers() + get_arxiv_papers()
-    
-    latest = select_latest(papers)
-    if latest and latest["date"] != json.loads(Path("data/last_paper.json").read_text())["publicationDate"]:
-        write_last_paper(latest)
-
+    sys.exit(main())

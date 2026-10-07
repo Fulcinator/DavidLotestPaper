@@ -2,29 +2,46 @@ name: Check new paper
 
 on:
   schedule:
-  - cron: "0 */4 * * *"
+  # Off the top of the hour (less queueing on GitHub's scheduler); 00:47 UTC is just after the arXiv announcement
+  - cron: "47 */2 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: check-paper
+  cancel-in-progress: false
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
       - name: Install dependencies
-        run: pip install requests feedparser
+        run: pip install requests==2.32.5 feedparser==6.0.12 pytest==9.0.2
+
+      - name: Run tests
+        run: python -m pytest -q tests
 
       - name: Run checker
-        run: |
-          python scripts/check_paper.py
+        run: python scripts/check_paper.py
 
       - name: Commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add data/last_paper.json
-          git commit -m "Update last paper" || echo "No changes"
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Update last paper"
+          git pull --rebase
           git push
