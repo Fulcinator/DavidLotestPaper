@@ -1,8 +1,8 @@
 {
   "source": "arxiv",
-  "paperId": "2610.12569v1",
-  "title": "SWE-Duel: Towards a Self-Scaling Arena for Coding Agents",
-  "publicationDate": "2026-10-08",
-  "publishedAt": "2026-10-08T18:01:00Z",
-  "detectedAt": "2026-10-12T06:31:58Z"
+  "paperId": "2610.14453v1",
+  "title": "SecReason: Vulnerability Detection and In-Stream Self-Repair for LLM Code Generation",
+  "publicationDate": "2026-10-10",
+  "publishedAt": "2026-10-10T01:27:55Z",
+  "detectedAt": "2026-10-14T08:01:25Z"
 }
