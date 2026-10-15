@@ -1,8 +1,8 @@
 {
   "source": "arxiv",
-  "paperId": "2610.14453v1",
+  "paperId": "2610.14453v2",
   "title": "SecReason: Vulnerability Detection and In-Stream Self-Repair for LLM Code Generation",
   "publicationDate": "2026-10-10",
   "publishedAt": "2026-10-10T01:27:55Z",
-  "detectedAt": "2026-10-14T08:01:25Z"
+  "detectedAt": "2026-10-15T05:12:03Z"
 }
