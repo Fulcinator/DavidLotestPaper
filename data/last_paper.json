@@ -1,8 +1,8 @@
 {
   "source": "arxiv",
-  "paperId": "2610.14453v2",
-  "title": "SecReason: Vulnerability Detection and In-Stream Self-Repair for LLM Code Generation",
-  "publicationDate": "2026-10-10",
-  "publishedAt": "2026-10-10T01:27:55Z",
-  "detectedAt": "2026-10-15T05:12:03Z"
+  "paperId": "2610.25937v1",
+  "title": "RAGLeak: Supply-Chain Privacy Backdoors in Retrieval-Augmented Generation",
+  "publicationDate": "2026-10-19",
+  "publishedAt": "2026-10-19T07:32:11Z",
+  "detectedAt": "2026-10-20T05:17:44Z"
 }
